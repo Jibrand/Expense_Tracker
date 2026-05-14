@@ -72,7 +72,7 @@ const Dashboard = ({ onStatsClick, onDeleteRequest, onViewAll }) => {
       {/* Recent Transactions (Scrollable) */}
       <div className="space-y-4 pt-4 pb-10">
         <div className="flex items-center justify-between px-0.5">
-          <h3 className="font-bold text-xs text-text-main uppercase tracking-tight">Recent activity</h3>
+          <h3 className="font-bold text-xs text-text-maintracking-tight">Recent activity</h3>
           <button
             onClick={onViewAll}
             className="text-primary text-[11px] font-bold"
@@ -85,7 +85,7 @@ const Dashboard = ({ onStatsClick, onDeleteRequest, onViewAll }) => {
           {Object.keys(groupedTransactions).length > 0 ? (
             Object.keys(groupedTransactions).sort((a, b) => b.localeCompare(a)).map(date => (
               <div key={date} className="space-y-1.5">
-                <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider ml-1">
+                <h4 className="text-[10px] font-bold text-text-mutedtracking-wider ml-1">
                   {getDateLabel(date)}
                 </h4>
                 <div className="space-y-1">

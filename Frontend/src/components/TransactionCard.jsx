@@ -56,7 +56,7 @@ const TransactionCard = ({ transaction, onDelete }) => {
       </div>
 
       <button
-        onClick={() => onDelete(transaction.id)}
+        onClick={() => onDelete(transaction._id || transaction.id)}
         className="absolute top-0 right-0 h-full w-10 bg-danger text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
       >
         <HiOutlineTrash size={16} />
