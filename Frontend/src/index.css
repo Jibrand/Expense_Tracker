@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-text-main antialiased font-sans tracking-normal;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .mobile-container {
+    @apply max-w-[480px] mx-auto h-screen bg-background relative overflow-hidden flex flex-col;
+  }
+
+  .glass-effect {
+    @apply bg-white/80 backdrop-blur-md border-t border-border;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-white py-3 rounded-xl font-semibold shadow-soft active:scale-95 transition-all;
+  }
+
+  .card {
+    @apply bg-card p-2.5 rounded-xl shadow-soft border border-border/50;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}

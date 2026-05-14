@@ -1,0 +1,27 @@
+name: Node.js CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Build Docker image
+      run: |
+        docker build -t myproject-image:latest .
+
+    - name: Run Docker container
+      run: |
+        docker stop myproject-container || true
+        docker rm myproject-container || true
+        docker run -d --name myproject-container -p 5173:5173 myproject-image:latest
