@@ -3,7 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3001/api';
+const API_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:3001/api' 
+  : 'https://expense-tracker-3fvx.vercel.app/api';
 
 const AppContext = createContext();
 

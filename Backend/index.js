@@ -26,7 +26,10 @@ mongoose.connect(CONNECTION_URL, {
 })
 .then(() => {
     console.log('Connected Successfully to MongoDB.');
-    app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`));
+    // Only listen locally, Vercel handles the serverless execution
+    if (process.env.NODE_ENV !== 'production') {
+        app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`));
+    }
 })
 .catch((err) => {
     console.log('Connection failed: ', err.message);
@@ -40,3 +43,5 @@ process.on('unhandledRejection', (reason, promise) => {
 process.on('uncaughtException', (err) => {
     console.log('Uncaught Exception:', err);
 });
+
+export default app;
