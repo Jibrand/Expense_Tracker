@@ -24,24 +24,24 @@ const Stats = () => {
     const totalIn = transactions
       .filter(t => t.date === dateStr)
       .reduce((sum, t) => sum + (t.cashIn || 0), 0);
-    return { 
-      name: d.toLocaleDateString('en-US', { weekday: 'short' }), 
+    return {
+      name: d.toLocaleDateString('en-US', { weekday: 'short' }),
       out: totalOut,
       in: totalIn,
-      date: dateStr 
+      date: dateStr
     };
   }).reverse();
 
   return (
     <div className="space-y-4 pb-10">
       <header>
-        <h1 className="text-xl font-bold text-text-main">Statistics</h1>
+        <h1 className="text-xl font-semibold text-text-main">Statistics</h1>
         <p className="text-[10px] text-text-muted">Analytics for this month</p>
       </header>
 
       {/* Category Breakdown Pie Chart */}
       <div className="card">
-        <h3 className="font-bold text-xs mb-3">Expenses by category</h3>
+        <h3 className="font-semibold text-xs mb-3">Expenses by category</h3>
         <div className="h-[200px] w-full">
           {categoryData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
@@ -78,7 +78,7 @@ const Stats = () => {
 
       {/* Daily Trend Bar Chart */}
       <div className="card">
-        <h3 className="font-bold text-xs mb-3">7-day trend</h3>
+        <h3 className="font-semibold text-xs mb-3">7-day trend</h3>
         <div className="h-[180px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={last7Days}>

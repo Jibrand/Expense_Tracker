@@ -23,7 +23,7 @@ const Settings = () => {
       t.balance
     ]);
 
-    let csvContent = "data:text/csv;charset=utf-8," 
+    let csvContent = "data:text/csv;charset=utf-8,"
       + headers.join(",") + "\n"
       + rows.map(e => e.join(",")).join("\n");
 
@@ -38,51 +38,54 @@ const Settings = () => {
   };
 
   return (
-    <div className="space-y-4">
-      <header>
-        <h1 className="text-xl font-bold text-text-main">Settings</h1>
-      </header>
+    <div className="space-y-3">
+      <div className="sticky top-0 z-30 bg-background pt-3 pb-3 space-y-3 -mx-3 px-3 shadow-sm border-b border-border/10">
 
-      {/* Profile Section */}
-      <div className="card space-y-3">
-        <h3 className="font-bold text-sm">General Settings</h3>
-        <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-text-muted ml-1">Default entry by</label>
-          <div className="relative">
-            <HiOutlineUser className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
-            <input 
-              type="text" 
-              className="w-full pl-10 pr-3 py-2.5 bg-background rounded-xl border-none outline-none text-xs font-medium"
-              value={settings.entryBy}
-              onChange={(e) => setSettings({ ...settings, entryBy: e.target.value })}
-            />
+        <header>
+          <h1 className="text-2xl font-semibold text-text-main">Settings</h1>
+        </header>
+
+        {/* Profile Section */}
+        <div className="card space-y-4">
+          <h3 className="font-semibold text-base text-slate-800">General Settings</h3>
+          <div className="space-y-2">
+            <label className="text-[11px] font-semibold text-text-muted ml-1  tracking-wider">Default entry by</label>
+            <div className="relative">
+              <HiOutlineUser className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+              <input
+                type="text"
+                className="w-full pl-10 pr-3 py-3 bg-background rounded-xl border-none outline-none text-sm font-semibold text-slate-700 shadow-inner"
+                value={settings.entryBy}
+                onChange={(e) => setSettings({ ...settings, entryBy: e.target.value })}
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Data Management Section */}
-      <div className="card space-y-3">
-        <h3 className="font-bold text-sm">Data Management</h3>
-        
-        <button 
-          onClick={exportToCSV}
-          className="w-full flex items-center justify-between p-3 bg-background rounded-xl hover:bg-primary/5 transition-colors group"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-              <HiOutlineDownload size={18} />
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-semibold">Export to CSV</p>
-              <p className="text-[10px] text-text-muted">Download all records</p>
-            </div>
-          </div>
-        </button>
-      </div>
+        {/* Data Management Section */}
+        <div className="card space-y-4">
+          <h3 className="font-semibold text-base text-slate-800">Data Management</h3>
 
-      <div className="py-6 text-center">
-        <p className="text-[10px] text-text-muted font-medium">Daily Expense Tracker v1.0</p>
-        <p className="text-[10px] text-text-muted">Designed for Jibran</p>
+          <button
+            onClick={exportToCSV}
+            className="w-full flex items-center justify-between p-4 bg-background rounded-xl hover:bg-primary/5 transition-colors group border border-transparent hover:border-primary/20"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-primary/10 text-primary flex items-center justify-center transition-transform group-active:scale-90">
+                <HiOutlineDownload size={22} />
+              </div>
+              <div className="text-left">
+                <p className="text-base font-semibold text-slate-700">Export to CSV</p>
+                <p className="text-xs font-medium text-text-muted">Download all records</p>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <div className="py-8 text-center space-y-1">
+          <p className="text-xs text-text-muted font-semibold tracking-tight">Daily Expense Tracker v2.0</p>
+          <p className="text-[11px] text-text-muted font-medium italic opacity-70">Designed for Jibran</p>
+        </div>
       </div>
     </div>
   );

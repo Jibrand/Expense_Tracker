@@ -34,8 +34,8 @@ const BottomNav = ({ activeTab, onTabChange, onAddClick }) => {
             className={`flex flex-col items-center gap-1 transition-colors ${isActive ? 'text-primary' : 'text-text-muted hover:text-primary/70'
               }`}
           >
-            <Icon size={24} />
-            <span className="text-[10px] font-medium">{tab.label}</span>
+            <Icon size={22} />
+            <span className="text-[11px] font-semibold tracking-tight">{tab.label}</span>
           </button>
         );
       })}

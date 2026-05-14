@@ -1,19 +1,42 @@
 import express from "express";
 import mongoose from "mongoose";
-import cors from "cors";  
-import contactRoutes from "./Routes/contact.js";
+import cors from "cors";
+import apiRoutes from "./Routes/api.js";
 import dotenv from "dotenv";
 
 dotenv.config();
-const PORT = 3001;
+
 const app = express();
+const PORT = process.env.PORT || 3001;
+
 app.use(express.json());
 app.use(cors());
 
-app.get("/", (req, res) => res.status(200).send("Hello world"));
+// Health Check
+app.get("/", (req, res) => res.status(200).send("Expense Tracker API is running"));
 
-app.use("/api", contactRoutes);
-
+// API Routes
+app.use("/api", apiRoutes);
 
 const CONNECTION_URL = process.env.CONNECTION_URL;
-mongoose .connect(CONNECTION_URL, { useNewUrlParser: true, useUnifiedTopology: true,}).then(() => { console.log('Connected Successfully.'); }) .catch((err) => console.log('No connection ', err));const server = app.listen(PORT, () => console.log("Listening on port ", PORT));
+
+mongoose.connect(CONNECTION_URL, { 
+    useNewUrlParser: true, 
+    useUnifiedTopology: true 
+})
+.then(() => {
+    console.log('Connected Successfully to MongoDB.');
+    app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`));
+})
+.catch((err) => {
+    console.log('Connection failed: ', err.message);
+});
+
+// Prevent crashes from unhandled rejections
+process.on('unhandledRejection', (reason, promise) => {
+    console.log('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.log('Uncaught Exception:', err);
+});

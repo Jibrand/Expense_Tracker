@@ -19,9 +19,9 @@ const SummaryCard = ({ title, amount, type = 'default', size = 'small' }) => {
       animate={{ opacity: 1, y: 0 }}
       className={`card flex flex-col justify-center ${isLarge ? 'p-3' : 'p-2'} min-w-[100px] flex-1`}
     >
-      <span className="text-text-muted text-[9px] font-medium mb-0">{title}</span>
-      <span className={`font-bold ${isLarge ? 'text-lg' : 'text-sm'} ${getColors().split(' ')[0]}`}>
-        {amount < 0 ? '-' : ''}PKR {Math.abs(amount).toLocaleString()}
+      <span className="text-text-muted text-[11px] font-semibold  tracking-wider mb-0.5">{title}</span>
+      <span className={`font-black ${isLarge ? 'text-xl' : 'text-base'} ${getColors().split(' ')[0]}`}>
+        {amount < 0 ? '-' : ''}{Math.abs(amount).toLocaleString()}
       </span>
     </motion.div>
   );

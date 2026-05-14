@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
+import axios from 'axios';
+
+const API_URL = 'http://localhost:3001/api';
 
 const AppContext = createContext();
 
@@ -20,70 +23,102 @@ const COLORS_POOL = ['#4F46E5', '#22C55E', '#EF4444', '#F59E0B', '#8B5CF6', '#10
 const ICONS_POOL = ['HiOutlineTag', 'HiOutlineHome', 'HiOutlineLightBulb', 'HiOutlineUserGroup', 'HiOutlineStar', 'HiOutlineFire'];
 
 export const AppProvider = ({ children }) => {
-  const [transactions, setTransactions] = useState(() => {
-    const saved = localStorage.getItem('transactions');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [transactions, setTransactions] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [settings, setSettingsState] = useState({ entryBy: 'Jibran' });
+  const [loading, setLoading] = useState(true);
 
-  const [categories, setCategories] = useState(() => {
-    const saved = localStorage.getItem('categories');
-    return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
-  });
-
-  const [settings, setSettings] = useState(() => {
-    const saved = localStorage.getItem('settings');
-    return saved ? JSON.parse(saved) : { entryBy: 'Jibran' };
-  });
-
+  // Initial Fetch
   useEffect(() => {
-    localStorage.setItem('transactions', JSON.stringify(transactions));
-  }, [transactions]);
+    const fetchData = async () => {
+      try {
+        const [transRes, catRes, setRes] = await Promise.all([
+          axios.get(`${API_URL}/transactions`),
+          axios.get(`${API_URL}/categories`),
+          axios.get(`${API_URL}/settings`)
+        ]);
 
-  useEffect(() => {
-    localStorage.setItem('categories', JSON.stringify(categories));
-  }, [categories]);
+        // If no categories in DB, use initials
+        if (catRes.data.length === 0) {
+          setCategories(INITIAL_CATEGORIES);
+          // Optional: Seed the DB with initials
+          INITIAL_CATEGORIES.forEach(c => axios.post(`${API_URL}/categories`, c));
+        } else {
+          setCategories(catRes.data);
+        }
 
-  useEffect(() => {
-    localStorage.setItem('settings', JSON.stringify(settings));
-  }, [settings]);
-
-  const addTransaction = (transaction) => {
-    const newTransaction = {
-      ...transaction,
-      id: uuidv4(),
-      createdAt: Date.now(),
+        setTransactions(recalculateBalances(transRes.data));
+        setSettingsState(setRes.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast.error('Failed to connect to server');
+      } finally {
+        setLoading(false);
+      }
     };
-    const updatedTransactions = [...transactions, newTransaction];
-    setTransactions(recalculateBalances(updatedTransactions));
-    toast.success('Record saved');
+    fetchData();
+  }, []);
+
+  const addTransaction = async (transaction) => {
+    try {
+      const res = await axios.post(`${API_URL}/transactions`, transaction);
+      const updated = [...transactions, res.data];
+      setTransactions(recalculateBalances(updated));
+      toast.success('Record saved');
+    } catch (error) {
+      toast.error('Failed to save record');
+    }
   };
 
-  const deleteTransaction = (id) => {
-    const updatedTransactions = transactions.filter(t => t.id !== id);
-    setTransactions(recalculateBalances(updatedTransactions));
-    toast.success('Record deleted');
+  const deleteTransaction = async (id) => {
+    try {
+      // Find the transaction ID in MongoDB (it might be _id)
+      const t = transactions.find(t => t.id === id || t._id === id);
+      const mongoId = t._id || t.id;
+      
+      await axios.delete(`${API_URL}/transactions/${mongoId}`);
+      const updated = transactions.filter(t => t.id !== id && t._id !== id);
+      setTransactions(recalculateBalances(updated));
+      toast.success('Record deleted');
+    } catch (error) {
+      toast.error('Failed to delete record');
+    }
   };
 
-  const addCategory = (name) => {
+  const addCategory = async (name) => {
     if (categories.some(c => c.name.toLowerCase() === name.toLowerCase())) {
       toast.error('Exists');
       return;
     }
     const color = COLORS_POOL[Math.floor(Math.random() * COLORS_POOL.length)];
     const icon = ICONS_POOL[Math.floor(Math.random() * ICONS_POOL.length)];
-    const newCategory = { id: uuidv4(), name, icon, color };
-    setCategories([...categories, newCategory]);
-    toast.success('Category added');
+    const newCategory = { name, icon, color };
+    
+    try {
+      const res = await axios.post(`${API_URL}/categories`, newCategory);
+      setCategories([...categories, res.data]);
+      toast.success('Category added');
+    } catch (error) {
+      toast.error('Failed to add category');
+    }
+  };
+
+  const setSettings = async (newSettings) => {
+    try {
+      const res = await axios.post(`${API_URL}/settings`, newSettings);
+      setSettingsState(res.data);
+      toast.success('Settings updated');
+    } catch (error) {
+      toast.error('Failed to update settings');
+    }
   };
 
   const recalculateBalances = (list) => {
     const sorted = [...list].sort((a, b) => {
-      // Sort by date first
       const dA = new Date(a.date);
       const dB = new Date(b.date);
       if (dA - dB !== 0) return dA - dB;
-      // Then by actual creation time to preserve sequence of entries
-      return a.createdAt - b.createdAt;
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
     });
 
     let currentBalance = 0;
@@ -113,6 +148,7 @@ export const AppProvider = ({ children }) => {
       transactions,
       categories,
       settings,
+      loading,
       setSettings,
       addTransaction,
       deleteTransaction,

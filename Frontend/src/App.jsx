@@ -18,13 +18,21 @@ const AppContent = () => {
   const [showStats, setShowStats] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  const { deleteTransaction } = useAppContext();
+  const { deleteTransaction, loading: contextLoading } = useAppContext();
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1200);
+    // Keep minimum 1.2s loading to prevent flicker, but wait for context
+    const timer = setTimeout(() => {
+      if (!contextLoading) setIsLoading(false);
+    }, 1200);
+    
+    if (!contextLoading) {
+      const minTimer = setTimeout(() => setIsLoading(false), 500);
+      return () => clearTimeout(minTimer);
+    }
+
     return () => clearTimeout(timer);
-  }, []);
+  }, [contextLoading]);
 
   const renderScreen = () => {
     if (showStats) return <Stats />;
@@ -56,7 +64,7 @@ const AppContent = () => {
         {showStats && (
           <button
             onClick={() => setShowStats(false)}
-            className="sticky top-2 z-[40] mb-2 px-3 py-1 bg-white shadow-md rounded-full text-[10px] font-bold text-primary active:scale-95 transition-all"
+            className="sticky top-2 z-[40] mb-2 px-3 py-1 bg-white shadow-md rounded-full text-[10px] font-semibold text-primary active:scale-95 transition-all"
           >
             ← Back to Home
           </button>

@@ -6,7 +6,7 @@ import { format } from 'date-fns';
 
 const AddTransactionModal = ({ isOpen, onClose }) => {
   const { categories, addTransaction } = useAppContext();
-  
+
   const [type, setType] = useState('cashOut');
   const [formData, setFormData] = useState({
     date: format(new Date(), 'yyyy-MM-dd'),
@@ -23,7 +23,7 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
 
     const transaction = {
       ...formData,
-      time: format(new Date(), 'hh:mm aa'), 
+      time: format(new Date(), 'hh:mm aa'),
       cashIn: type === 'cashIn' ? (parseFloat(formData.amount) || 0) : 0,
       cashOut: type === 'cashOut' ? (parseFloat(formData.amount) || 0) : 0,
       categoryIcon: categoryObj.icon,
@@ -35,9 +35,9 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
 
     addTransaction(transaction);
     onClose();
-    setFormData({ 
-      ...formData, 
-      remark: '', 
+    setFormData({
+      ...formData,
+      remark: '',
       amount: '',
     });
   };
@@ -54,7 +54,7 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
           className="bg-white w-full max-w-[300px] rounded-xl p-3.5 shadow-2xl overflow-hidden"
         >
           <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-[12px] font-bold text-text-main uppercase">New entry</h2>
+            <h2 className="text-[12px] font-semibold text-text-main uppercase">New entry</h2>
             <button onClick={onClose} className="p-1 hover:bg-background rounded-full transition-colors">
               <HiOutlineX size={18} />
             </button>
@@ -66,18 +66,16 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => setType('cashIn')}
-                className={`flex-1 py-1.5 rounded-md text-[11px] font-bold transition-all ${
-                  type === 'cashIn' ? 'bg-secondary text-white shadow-md' : 'text-text-muted hover:text-text-main'
-                }`}
+                className={`flex-1 py-1.5 rounded-md text-[11px] font-semibold transition-all ${type === 'cashIn' ? 'bg-secondary text-white shadow-md' : 'text-text-muted hover:text-text-main'
+                  }`}
               >
                 Cash In
               </button>
               <button
                 type="button"
                 onClick={() => setType('cashOut')}
-                className={`flex-1 py-1.5 rounded-md text-[11px] font-bold transition-all ${
-                  type === 'cashOut' ? 'bg-danger text-white shadow-md' : 'text-text-muted hover:text-text-main'
-                }`}
+                className={`flex-1 py-1.5 rounded-md text-[11px] font-semibold transition-all ${type === 'cashOut' ? 'bg-danger text-white shadow-md' : 'text-text-muted hover:text-text-main'
+                  }`}
               >
                 Cash Out
               </button>
@@ -85,12 +83,12 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
 
             {/* Amount */}
             <div className="space-y-1 px-1">
-              <label className="text-[10px] font-bold text-text-muted uppercase">Amount (PKR)</label>
+              <label className="text-[10px] font-semibold text-text-muted uppercase">Amount ()</label>
               <input
                 type="number"
                 required
                 placeholder="0"
-                className="w-full text-3xl font-bold py-1 bg-transparent border-b-2 border-border focus:border-primary outline-none transition-colors placeholder:text-border"
+                className="w-full text-3xl font-semibold py-1 bg-transparent border-b-2 border-border focus:border-primary outline-none transition-colors placeholder:text-border"
                 value={formData.amount}
                 onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                 autoFocus
@@ -99,18 +97,18 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1 px-1">
-                <label className="text-[10px] font-bold text-text-muted uppercase">Date</label>
+                <label className="text-[10px] font-semibold text-text-muted uppercase">Date</label>
                 <input
                   type="date"
-                  className="w-full p-2 bg-background rounded-lg border border-border/20 outline-none text-[10px] font-bold text-text-main"
+                  className="w-full p-2 bg-background rounded-lg border border-border/20 outline-none text-[10px] font-semibold text-text-main"
                   value={formData.date}
                   onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                 />
               </div>
               <div className="space-y-1 px-1">
-                <label className="text-[10px] font-bold text-text-muted uppercase">Category</label>
+                <label className="text-[10px] font-semibold text-text-muted uppercase">Category</label>
                 <select
-                  className="w-full p-2 bg-background rounded-lg border border-border/20 outline-none text-[10px] font-bold text-text-main appearance-none"
+                  className="w-full p-2 bg-background rounded-lg border border-border/20 outline-none text-[10px] font-semibold text-text-main appearance-none"
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 >
@@ -122,17 +120,17 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
             </div>
 
             <div className="space-y-1 px-1">
-              <label className="text-[10px] font-bold text-text-muted uppercase">Remark</label>
+              <label className="text-[10px] font-semibold text-text-muted uppercase">Remark</label>
               <input
                 type="text"
                 placeholder="Details"
-                className="w-full p-2 bg-background rounded-lg border border-border/20 outline-none text-[10px] font-bold text-text-main"
+                className="w-full p-2 bg-background rounded-lg border border-border/20 outline-none text-[10px] font-semibold text-text-main"
                 value={formData.remark}
                 onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
               />
             </div>
 
-            <button type="submit" className="bg-primary text-white py-3 rounded-xl text-[12px] font-bold shadow-xl shadow-primary/20 active:scale-95 transition-all w-full">
+            <button type="submit" className="bg-primary text-white py-3 rounded-xl text-[12px] font-semibold shadow-xl shadow-primary/20 active:scale-95 transition-all w-full">
               Save record
             </button>
           </form>
