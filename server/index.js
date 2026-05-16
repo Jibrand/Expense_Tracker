@@ -13,7 +13,10 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: "http://localhost:5173", // Update this to your frontend URL
+  origin: [
+    "http://localhost:5173", 
+    "https://expense-tracker-silk-three-94.vercel.app"
+  ],
   credentials: true
 }));
 
