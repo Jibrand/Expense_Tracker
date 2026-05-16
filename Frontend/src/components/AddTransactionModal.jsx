@@ -54,9 +54,9 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
           className="bg-white w-full max-w-[300px] rounded-xl p-3.5 shadow-2xl overflow-hidden"
         >
           <div className="flex items-center justify-between mb-3 px-1">
-            <h2 className="text-[12px] font-semibold text-text-main uppercase">New entry</h2>
+            <h2 className="text-sm font-bold text-text-main ">New entry</h2>
             <button onClick={onClose} className="p-1 hover:bg-background rounded-full transition-colors">
-              <HiOutlineX size={18} />
+              <HiOutlineX size={20} />
             </button>
           </div>
 
@@ -66,7 +66,7 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => setType('cashIn')}
-                className={`flex-1 py-1.5 rounded-md text-[11px] font-semibold transition-all ${type === 'cashIn' ? 'bg-secondary text-white shadow-md' : 'text-text-muted hover:text-text-main'
+                className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${type === 'cashIn' ? 'bg-secondary text-white shadow-md' : 'text-text-muted hover:text-text-main'
                   }`}
               >
                 Cash In
@@ -74,7 +74,7 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={() => setType('cashOut')}
-                className={`flex-1 py-1.5 rounded-md text-[11px] font-semibold transition-all ${type === 'cashOut' ? 'bg-danger text-white shadow-md' : 'text-text-muted hover:text-text-main'
+                className={`flex-1 py-2 rounded-md text-sm font-bold transition-all ${type === 'cashOut' ? 'bg-danger text-white shadow-md' : 'text-text-muted hover:text-text-main'
                   }`}
               >
                 Cash Out
@@ -83,7 +83,7 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
 
             {/* Amount */}
             <div className="space-y-1 px-1">
-              <label className="text-[10px] font-semibold text-text-muted uppercase">Amount ()</label>
+              <label className="text-xs font-bold text-text-muted ">Amount (PKR)</label>
               <input
                 type="number"
                 required
@@ -95,42 +95,47 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1 px-1">
-                <label className="text-[10px] font-semibold text-text-muted uppercase">Date</label>
-                <input
-                  type="date"
-                  className="w-full p-2 bg-background rounded-lg border border-border/20 outline-none text-[10px] font-semibold text-text-main"
-                  value={formData.date}
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                />
-              </div>
-              <div className="space-y-1 px-1">
-                <label className="text-[10px] font-semibold text-text-muted uppercase">Category</label>
-                <select
-                  className="w-full p-2 bg-background rounded-lg border border-border/20 outline-none text-[10px] font-semibold text-text-main appearance-none"
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                >
-                  {categories.map(cat => (
-                    <option key={cat.id} value={cat.name}>{cat.name}</option>
-                  ))}
-                </select>
+            <div className="space-y-1 px-1">
+              <label className="text-xs font-bold text-text-muted ">Date</label>
+              <input
+                type="date"
+                className="w-full p-2.5 bg-background rounded-lg border border-border/20 outline-none text-sm font-semibold text-text-main"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-1 px-1">
+              <label className="text-xs font-bold text-text-muted ">Category</label>
+              <div className="flex overflow-x-auto no-scrollbar gap-2 py-1 -mx-1 px-1">
+                {categories.map(cat => (
+                  <button
+                    key={cat.id || cat._id}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, category: cat.name })}
+                    className={`shrink-0 px-3 py-2 rounded-lg text-xs font-bold border transition-all ${formData.category === cat.name
+                      ? 'bg-primary/10 border-primary text-primary'
+                      : 'bg-background border-border/20 text-text-muted'
+                      }`}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
               </div>
             </div>
 
             <div className="space-y-1 px-1">
-              <label className="text-[10px] font-semibold text-text-muted uppercase">Remark</label>
+              <label className="text-xs font-bold text-text-muted ">Remark</label>
               <input
                 type="text"
                 placeholder="Details"
-                className="w-full p-2 bg-background rounded-lg border border-border/20 outline-none text-[10px] font-semibold text-text-main"
+                className="w-full p-2.5 bg-background rounded-lg border border-border/20 outline-none text-sm font-semibold text-text-main"
                 value={formData.remark}
                 onChange={(e) => setFormData({ ...formData, remark: e.target.value })}
               />
             </div>
 
-            <button type="submit" className="bg-primary text-white py-3 rounded-xl text-[12px] font-semibold shadow-xl shadow-primary/20 active:scale-95 transition-all w-full">
+            <button type="submit" className="bg-primary text-white py-3.5 rounded-xl text-sm font-bold shadow-xl shadow-primary/20 active:scale-95 transition-all w-full">
               Save record
             </button>
           </form>

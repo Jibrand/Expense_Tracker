@@ -13,6 +13,7 @@ const transactionSchema = mongoose.Schema({
   mode: { type: String, default: "Cash" },
   entryBy: { type: String, default: "Jibran" },
   contact: { type: String, default: "" },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   createdAt: { type: Date, default: Date.now },
 });
 

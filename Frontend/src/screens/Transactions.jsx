@@ -93,7 +93,7 @@ const Transactions = ({ onDeleteRequest }) => {
         {Object.keys(groupedTransactions).length > 0 ? (
           Object.keys(groupedTransactions).sort((a, b) => b.localeCompare(a)).map(date => (
             <div key={date} className="space-y-1.5">
-              <h3 className="text-[11px] font-semibold text-text-muted  tracking-wider ml-1">
+              <h3 className="text-sm font-semibold text-text-muted  tracking-wider ml-1">
                 {getDateLabel(date)}
               </h3>
               <div className="space-y-1">

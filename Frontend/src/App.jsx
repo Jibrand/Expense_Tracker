@@ -11,66 +11,70 @@ import AddTransactionModal from './components/AddTransactionModal';
 import ConfirmationDialog from './components/ConfirmDialog';
 import SkeletonLoader from './components/Skeleton';
 import { useAppContext } from './context/AppContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './screens/Login';
+import Register from './screens/Register';
+
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 
 const AppContent = () => {
-  const [activeTab, setActiveTab] = useState('home');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showStats, setShowStats] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authView, setAuthView] = useState('login');
+  
   const { deleteTransaction, loading: contextLoading } = useAppContext();
+  const { user, loading: authLoading } = useAuth();
+  
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // Keep minimum 1.2s loading to prevent flicker, but wait for context
-    const timer = setTimeout(() => {
-      if (!contextLoading) setIsLoading(false);
-    }, 1200);
-    
-    if (!contextLoading) {
-      const minTimer = setTimeout(() => setIsLoading(false), 500);
-      return () => clearTimeout(minTimer);
+    if (!authLoading) {
+      const timer = setTimeout(() => {
+        if (!contextLoading) setIsLoading(false);
+      }, 800);
+      return () => clearTimeout(timer);
     }
+  }, [authLoading, contextLoading]);
 
-    return () => clearTimeout(timer);
-  }, [contextLoading]);
+  if (authLoading || (user && isLoading)) return <SkeletonLoader />;
 
-  const renderScreen = () => {
-    if (showStats) return <Stats />;
+  if (!user) {
+    return authView === 'login' 
+      ? <Login onToggle={() => setAuthView('register')} /> 
+      : <Register onToggle={() => setAuthView('login')} />;
+  }
 
-    switch (activeTab) {
-      case 'home':
-        return <Dashboard
-          onStatsClick={() => setShowStats(true)}
-          onDeleteRequest={(id) => setDeleteId(id)}
-          onViewAll={() => setActiveTab('transactions')}
-        />;
-      case 'transactions':
-        return <Transactions onDeleteRequest={(id) => setDeleteId(id)} />;
-      case 'categories':
-        return <Categories />;
-      case 'settings':
-        return <Settings />;
-      default:
-        return <Dashboard onStatsClick={() => setShowStats(true)} />;
-    }
-  };
-
-  if (isLoading) return <SkeletonLoader />;
+  const isStatsPage = location.pathname === '/stats';
 
   return (
     <div className="mobile-container">
       {/* Scrollable Content Area */}
       <div className="flex-1 overflow-y-auto px-3 no-scrollbar mb-10">
-        {showStats && (
+        {isStatsPage && (
           <button
-            onClick={() => setShowStats(false)}
+            onClick={() => navigate('/')}
             className="sticky top-2 z-[40] mb-2 px-3 py-1 bg-white shadow-md rounded-full text-[10px] font-semibold text-primary active:scale-95 transition-all"
           >
             ← Back to Home
           </button>
         )}
 
-        {renderScreen()}
+        <Routes>
+          <Route path="/" element={
+            <Dashboard
+              onStatsClick={() => navigate('/stats')}
+              onDeleteRequest={(id) => setDeleteId(id)}
+              onViewAll={() => navigate('/transactions')}
+            />
+          } />
+          <Route path="/transactions" element={<Transactions onDeleteRequest={(id) => setDeleteId(id)} />} />
+          <Route path="/categories" element={<Categories />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/stats" element={<Stats />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
 
         {/* Spacer for bottom nav */}
         <div className="h-28" />
@@ -78,11 +82,6 @@ const AppContent = () => {
 
       {/* Static Bottom Navigation */}
       <BottomNav
-        activeTab={showStats ? 'stats' : activeTab}
-        onTabChange={(tab) => {
-          setActiveTab(tab);
-          setShowStats(false);
-        }}
         onAddClick={() => setIsModalOpen(true)}
       />
 
@@ -107,10 +106,12 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <AppProvider>
-      <Toaster position="top-center" />
-      <AppContent />
-    </AppProvider>
+    <AuthProvider>
+      <AppProvider>
+        <Toaster position="top-center" />
+        <AppContent />
+      </AppProvider>
+    </AuthProvider>
   );
 };
 

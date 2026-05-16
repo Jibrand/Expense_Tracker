@@ -1,10 +1,12 @@
 import React from 'react';
-import { HiOutlineDownload, HiOutlineUser } from 'react-icons/hi';
-import { useAppContext } from '../context/AppContext';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
+import { useAppContext } from '../context/AppContext';
+import { HiOutlineDownload, HiOutlineUser, HiOutlineLogout } from 'react-icons/hi';
 
 const Settings = () => {
   const { transactions, settings, setSettings } = useAppContext();
+  const { user, logout } = useAuth();
 
   const exportToCSV = () => {
     if (transactions.length === 0) {
@@ -82,9 +84,31 @@ const Settings = () => {
           </button>
         </div>
 
+        {/* Account Section */}
+        <div className="card space-y-4">
+          <h3 className="font-semibold text-base text-slate-800">Account</h3>
+          <div className="flex items-center gap-4 p-2">
+            <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-lg shadow-inner">
+              {user?.name?.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="font-bold text-slate-800">{user?.name}</p>
+              <p className="text-xs font-medium text-text-muted">{user?.email}</p>
+            </div>
+          </div>
+          
+          <button
+            onClick={logout}
+            className="w-full flex items-center justify-center gap-2 p-3 bg-danger/10 text-danger rounded-xl font-bold active:scale-95 transition-all mt-2"
+          >
+            <HiOutlineLogout size={20} />
+            Logout
+          </button>
+        </div>
+
         <div className="py-8 text-center space-y-1">
-          <p className="text-xs text-text-muted font-semibold tracking-tight">Daily Expense Tracker v2.0</p>
-          <p className="text-[11px] text-text-muted font-medium italic opacity-70">Designed for Jibran</p>
+          <p className="text-xs text-text-muted font-semibold tracking-tight">ExpenseTurkey v2.0</p>
+          <p className="text-[11px] text-text-muted font-medium italic opacity-70">Designed for {user?.name}</p>
         </div>
       </div>
     </div>

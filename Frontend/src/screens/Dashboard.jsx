@@ -3,9 +3,11 @@ import SummaryCard from '../components/SummaryCard';
 import TransactionCard from '../components/TransactionCard';
 import { useAppContext } from '../context/AppContext';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard = ({ onStatsClick, onDeleteRequest, onViewAll }) => {
   const { transactions, totals } = useAppContext();
+  const { user } = useAuth();
 
   const recentTransactions = transactions.slice(0, 15);
 
@@ -35,8 +37,8 @@ const Dashboard = ({ onStatsClick, onDeleteRequest, onViewAll }) => {
       <div className="sticky top-0 z-30 bg-background pt-3 pb-3 space-y-3 -mx-3 px-3 shadow-sm border-b border-border/10">
         <header className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-text-main leading-tight">Daily Expense</h1>
-            <p className="text-xs text-text-muted">Welcome back, Jibran</p>
+            <h1 className="text-xl font-bold text-text-main leading-tight">ExpenseTurkey</h1>
+            <p className="text-xs text-text-muted">Welcome back, {user?.name}</p>
           </div>
           <button
             onClick={onStatsClick}
@@ -85,7 +87,7 @@ const Dashboard = ({ onStatsClick, onDeleteRequest, onViewAll }) => {
           {Object.keys(groupedTransactions).length > 0 ? (
             Object.keys(groupedTransactions).sort((a, b) => b.localeCompare(a)).map(date => (
               <div key={date} className="space-y-1.5">
-                <h4 className="text-[10px] font-bold text-text-mutedtracking-wider ml-1">
+                <h4 className="text-sm font-bold text-text-mutedtracking-wider ml-1">
                   {getDateLabel(date)}
                 </h4>
                 <div className="space-y-1">

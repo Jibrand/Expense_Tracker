@@ -2,7 +2,7 @@ import Category from "../Models/category.js";
 
 export const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find();
+    const categories = await Category.find({ userId: req.user.userId });
     res.status(200).json(categories);
   } catch (error) {
     res.status(404).json({ message: error.message });
@@ -11,7 +11,7 @@ export const getCategories = async (req, res) => {
 
 export const createCategory = async (req, res) => {
   const category = req.body;
-  const newCategory = new Category(category);
+  const newCategory = new Category({ ...category, userId: req.user.userId });
   try {
     await newCategory.save();
     res.status(201).json(newCategory);

@@ -34,10 +34,10 @@ const TransactionCard = ({ transaction, onDelete }) => {
             {getIcon(transaction.categoryIcon, { size: 18 })}
           </div>
           <div className="min-w-0 flex-1">
-            <h4 className="font-semibold text-text-main text-sm line-clamp-1 leading-tight mb-0.5">
+            <h4 className="font-semibold text-text-main text-lg line-clamp-1 leading-tight mb-0.5">
               {transaction.remark || transaction.category}
             </h4>
-            <div className="text-[11px] text-text-muted flex items-center gap-1.5">
+            <div className="text-sm text-text-muted flex items-center gap-1.5">
               <span className="font-medium">{displayTime(transaction.time)}</span>
               <span className="w-0.5 h-0.5 rounded-full bg-border"></span>
               <span className="truncate">{transaction.category}</span>
@@ -46,10 +46,10 @@ const TransactionCard = ({ transaction, onDelete }) => {
         </div>
 
         <div className="text-right shrink-0">
-          <p className={`font-semibold text-sm leading-tight ${isIncome ? 'text-secondary' : 'text-danger'}`}>
+          <p className={`font-semibold text-lg leading-tight ${isIncome ? 'text-secondary' : 'text-danger'}`}>
             {isIncome ? '+' : '-'} {(amount || 0).toLocaleString()}
           </p>
-          <p className="text-[10px] text-text-muted mt-1 font-medium">
+          <p className="text-xs text-text-muted mt-1 font-medium">
             PKR {(transaction.balance || 0).toLocaleString()}
           </p>
         </div>
