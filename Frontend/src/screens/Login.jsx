@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/useAuthStore';
 import { motion } from 'framer-motion';
 import { HiOutlineMail, HiOutlineLockClosed } from 'react-icons/hi';
 
 const Login = ({ onToggle }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useAuth();
+  const login = useAuthStore(s => s.login);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -23,9 +23,10 @@ const Login = ({ onToggle }) => {
       className="flex flex-col items-center justify-center min-h-screen px-6 bg-background"
     >
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-soft border border-border">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-text-main mb-2">ExpenseTurkey</h1>
-          <p className="text-text-muted">Sign in to track your wealth</p>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <img src="/logo.png" alt="Ginnti Logo" className="w-16 h-16 object-contain mb-4" />
+          <h1 className="text-3xl font-black text-gray-800 tracking-tight mb-2">Ginnti</h1>
+          <p className="text-gray-500 font-medium">Sign in to track your wealth</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -62,7 +63,7 @@ const Login = ({ onToggle }) => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-primary"
+            className="w-full btn-flat"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>

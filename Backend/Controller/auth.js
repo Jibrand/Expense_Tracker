@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../Models/user.js";
 import Category from "../Models/category.js";
+import Book from "../Models/book.js";
+
 
 const DEFAULT_CATEGORIES = [
   { name: 'Grocery', icon: 'HiOutlineShoppingCart', color: '#4F46E5' },
@@ -19,7 +21,7 @@ const DEFAULT_CATEGORIES = [
 // Secret will be fetched inside functions to ensure dotenv is loaded
 
 export const register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, bookName } = req.body;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -31,6 +33,13 @@ export const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
+    });
+
+    // Create default book with custom name
+    await Book.create({
+      name: bookName || "My Wallet",
+      userId: newUser._id,
+      color: "#4F46E5"
     });
 
     // Seed default categories for new user
@@ -70,13 +79,13 @@ export const login = async (req, res) => {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
-    res.status(200).json({ 
-      user: { 
-        id: existingUser._id, 
-        name: existingUser.name, 
-        email: existingUser.email, 
-        role: existingUser.role 
-      } 
+    res.status(200).json({
+      user: {
+        id: existingUser._id,
+        name: existingUser.name,
+        email: existingUser.email,
+        role: existingUser.role
+      }
     });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });

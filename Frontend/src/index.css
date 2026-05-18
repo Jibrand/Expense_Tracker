@@ -4,26 +4,38 @@
 
 @layer base {
   body {
-    @apply bg-background text-text-main antialiased font-sans tracking-normal;
+    @apply bg-background text-text-main antialiased font-sans;
     -webkit-tap-highlight-color: transparent;
   }
 }
 
 @layer components {
   .mobile-container {
-    @apply max-w-[480px] mx-auto h-screen bg-background relative overflow-hidden flex flex-col;
+    @apply w-full mx-auto h-screen bg-background relative overflow-hidden flex flex-col lg:max-w-none lg:pl-64;
+  }
+
+  .main-content-wrapper {
+    @apply w-full h-full flex flex-col bg-background;
+  }
+
+  .dashboard-container {
+    @apply w-full max-w-6xl mx-auto flex flex-col px-4 lg:px-10;
+  }
+
+  .flat-card {
+    @apply bg-card p-4 rounded-xl border border-border transition-all;
+  }
+
+  .btn-flat {
+    @apply bg-primary text-white py-2.5 px-6 rounded-xl font-bold hover:brightness-110 active:scale-[0.98] transition-all disabled:opacity-50;
+  }
+
+  .btn-flat-secondary {
+    @apply bg-white text-primary py-2.5 px-6 rounded-xl font-bold border border-border hover:bg-background active:scale-[0.98] transition-all;
   }
 
   .glass-effect {
-    @apply bg-white/80 backdrop-blur-md border-t border-border;
-  }
-
-  .btn-primary {
-    @apply bg-primary text-white py-3 rounded-xl font-semibold shadow-soft active:scale-95 transition-all;
-  }
-
-  .card {
-    @apply bg-card p-2.5 rounded-xl shadow-soft border border-border/50;
+    @apply bg-white border-t border-border;
   }
 
   .no-scrollbar::-webkit-scrollbar {

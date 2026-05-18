@@ -7,14 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: "#4F46E5",
-        secondary: "#22C55E",
-        danger: "#EF4444",
-        background: "#F8FAFC",
+        primary: "#70C6D7",
+        secondary: "#E5A844",
+        accent: "#FCA06E",
+        danger: "#A93321",
+        background: "#F5FAFA",
         card: "#FFFFFF",
-        "text-main": "#0F172A",
-        "text-muted": "#64748B",
-        border: "#E2E8F0",
+        "text-main": "#234954",
+        "text-muted": "#688A94",
+        border: "#2349541A",
       },
       borderRadius: {
         '2xl': '1rem',

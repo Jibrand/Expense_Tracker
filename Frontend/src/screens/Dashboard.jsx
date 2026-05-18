@@ -1,13 +1,36 @@
 import React, { useMemo } from 'react';
 import SummaryCard from '../components/SummaryCard';
 import TransactionCard from '../components/TransactionCard';
-import { useAppContext } from '../context/AppContext';
 import { format, isToday, isYesterday, parseISO } from 'date-fns';
-import { useAuth } from '../context/AuthContext';
+import { HiOutlinePlus, HiOutlineChartBar, HiOutlineMenuAlt2, HiRefresh } from 'react-icons/hi';
 
-const Dashboard = ({ onStatsClick, onDeleteRequest, onViewAll }) => {
-  const { transactions, totals } = useAppContext();
-  const { user } = useAuth();
+// Stores
+import { useAuthStore } from '../store/useAuthStore';
+import { useTransactionStore } from '../store/useTransactionStore';
+import { useUIStore } from '../store/useUIStore';
+
+const Dashboard = ({ onAddClick, onStatsClick, onDeleteRequest, onEditRequest, onViewAll, onMenuClick }) => {
+  const user = useAuthStore(s => s.user);
+  const transactions = useTransactionStore(s => s.transactions);
+  const isSyncing = useUIStore(s => s.isSyncing);
+
+  const totals = useMemo(() => {
+    const cashIn = transactions.reduce((sum, t) => sum + (t.cashIn || 0), 0);
+    const cashOut = transactions.reduce((sum, t) => sum + (t.cashOut || 0), 0);
+    
+    const today = new Date().toISOString().split('T')[0];
+    const todayTotals = transactions.filter(t => t.date === today).reduce((acc, t) => {
+      acc.cashIn += (t.cashIn || 0);
+      acc.cashOut += (t.cashOut || 0);
+      return acc;
+    }, { cashIn: 0, cashOut: 0 });
+
+    return {
+      balance: cashIn - cashOut,
+      todayCashIn: todayTotals.cashIn,
+      todayCashOut: todayTotals.cashOut
+    };
+  }, [transactions]);
 
   const recentTransactions = transactions.slice(0, 15);
 
@@ -33,19 +56,44 @@ const Dashboard = ({ onStatsClick, onDeleteRequest, onViewAll }) => {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Sticky Header & Summary Section - Hardened */}
-      <div className="sticky top-0 z-30 bg-background pt-3 pb-3 space-y-3 -mx-3 px-3 shadow-sm border-b border-border/10">
+      {/* Sticky Header & Summary Section */}
+      <div className="sticky top-0 z-30 bg-[#F8FAFC]/80 backdrop-blur-md pt-6 pb-4 space-y-5 border-b border-gray-100">
         <header className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-text-main leading-tight">ExpenseTurkey</h1>
-            <p className="text-xs text-text-muted">Welcome back, {user?.name}</p>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={onMenuClick}
+              className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-white border border-gray-100 text-gray-500 active:bg-gray-50 transition-colors"
+            >
+              <HiOutlineMenuAlt2 size={20} />
+            </button>
+            <div className="space-y-0.5">
+              <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Overview</h1>
+              <p className="text-xs text-gray-400 font-medium">Hello, {user?.name}</p>
+            </div>
           </div>
-          <button
-            onClick={onStatsClick}
-            className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shadow-soft text-xl"
-          >
-            📊
-          </button>
+
+          <div className="flex items-center gap-3">
+            {isSyncing && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white border border-gray-100 text-[10px] font-bold text-gray-400">
+                <HiRefresh className="animate-spin text-primary" size={12} />
+                <span>Syncing...</span>
+              </div>
+            )}
+            <button
+              onClick={onStatsClick}
+              className="w-10 h-10 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-primary hover:border-primary transition-all"
+              title="Statistics"
+            >
+              <HiOutlineChartBar size={20} />
+            </button>
+            <button
+              onClick={onAddClick}
+              className="hidden lg:flex btn-flat items-center gap-2"
+            >
+              <HiOutlinePlus size={18} />
+              <span>New transaction</span>
+            </button>
+          </div>
         </header>
 
         {/* Main Balance Card */}
@@ -73,37 +121,38 @@ const Dashboard = ({ onStatsClick, onDeleteRequest, onViewAll }) => {
 
       {/* Recent Transactions (Scrollable) */}
       <div className="space-y-4 pt-4 pb-10">
-        <div className="flex items-center justify-between px-0.5">
-          <h3 className="font-bold text-xs text-text-maintracking-tight">Recent activity</h3>
+        <div className="flex items-center justify-between px-1">
+          <h3 className="font-bold text-sm text-gray-800">Recent activity</h3>
           <button
             onClick={onViewAll}
-            className="text-primary text-[11px] font-bold"
+            className="text-primary text-xs font-bold"
           >
             View all
           </button>
         </div>
 
-        <div className="space-y-5">
+        <div className="space-y-6">
           {Object.keys(groupedTransactions).length > 0 ? (
             Object.keys(groupedTransactions).sort((a, b) => b.localeCompare(a)).map(date => (
-              <div key={date} className="space-y-1.5">
-                <h4 className="text-sm font-bold text-text-mutedtracking-wider ml-1">
+              <div key={date} className="space-y-2">
+                <h4 className="text-xs font-bold text-gray-400 ml-1">
                   {getDateLabel(date)}
                 </h4>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {groupedTransactions[date].map(t => (
                     <TransactionCard
                       key={t.id}
                       transaction={t}
                       onDelete={onDeleteRequest}
+                      onEdit={onEditRequest}
                     />
                   ))}
                 </div>
               </div>
             ))
           ) : (
-            <div className="py-8 text-center bg-card rounded-xl border border-dashed border-border/50">
-              <p className="text-text-muted text-xs font-medium">No records yet.</p>
+            <div className="py-12 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+              <p className="text-gray-400 text-xs font-bold">No records yet.</p>
             </div>
           )}
         </div>

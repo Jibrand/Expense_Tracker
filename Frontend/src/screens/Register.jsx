@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../store/useAuthStore';
 import { motion } from 'framer-motion';
-import { HiOutlineUser, HiOutlineMail, HiOutlineLockClosed } from 'react-icons/hi';
+import { HiOutlineUser, HiOutlineMail, HiOutlineLockClosed, HiOutlineBookOpen } from 'react-icons/hi';
 
 const Register = ({ onToggle }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { register } = useAuth();
+  const [bookName, setBookName] = useState('');
+  const register = useAuthStore(s => s.register);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const success = await register(name, email, password);
+    const success = await register(name, email, password, bookName);
     setLoading(false);
     if (success) onToggle(); // Switch to login after successful registration
   };
@@ -25,9 +26,10 @@ const Register = ({ onToggle }) => {
       className="flex flex-col items-center justify-center min-h-screen px-6 bg-background"
     >
       <div className="w-full max-w-md bg-white p-8 rounded-2xl shadow-soft border border-border">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-text-main mb-2">Join ExpenseTurkey</h1>
-          <p className="text-text-muted">Start tracking your wealth today</p>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <img src="/logo.png" alt="Ginnti Logo" className="w-16 h-16 object-contain mb-4" />
+          <h1 className="text-3xl font-black text-gray-800 tracking-tight mb-2">Join Ginnti</h1>
+          <p className="text-gray-500 font-medium">Start tracking your wealth today</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -76,10 +78,24 @@ const Register = ({ onToggle }) => {
             </div>
           </div>
 
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-text-muted px-1">First Book Name (Optional)</label>
+            <div className="relative">
+              <HiOutlineBookOpen className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted text-xl" />
+              <input
+                type="text"
+                className="w-full pl-11 pr-4 py-3 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                placeholder="e.g. My Wallet, Business, etc."
+                value={bookName}
+                onChange={(e) => setBookName(e.target.value)}
+              />
+            </div>
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-primary"
+            className="w-full btn-flat"
           >
             {loading ? 'Creating account...' : 'Create Account'}
           </button>

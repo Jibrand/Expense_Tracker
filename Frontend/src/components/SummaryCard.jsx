@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { formatCurrency } from '../utils/amountFormatter';
 
 const SummaryCard = ({ title, amount, type = 'default', size = 'small' }) => {
   const getColors = () => {
@@ -15,13 +16,16 @@ const SummaryCard = ({ title, amount, type = 'default', size = 'small' }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`card flex flex-col justify-center ${isLarge ? 'p-3' : 'p-2'} min-w-[100px] flex-1`}
+      className={`flat-card flex flex-col justify-center ${isLarge ? 'p-6 bg-primary/5 border-primary/20' : 'p-4 bg-white'} min-w-0 flex-1`}
     >
-      <span className="text-text-muted text-[11px] font-semibold  tracking-wider mb-0.5">{title}</span>
-      <span className={`font-black ${isLarge ? 'text-xl' : 'text-base'} ${getColors().split(' ')[0]}`}>
-        {amount < 0 ? '-' : ''}{Math.abs(amount).toLocaleString()}
+      <span className="text-gray-400 text-xs font-bold mb-1 truncate">{title}</span>
+      <span 
+        className={`${isLarge ? 'text-3xl' : 'text-xl'} font-bold ${getColors().split(' ')[0]} truncate`}
+        title={amount.toLocaleString()}
+      >
+        {formatCurrency(amount)}
       </span>
     </motion.div>
   );

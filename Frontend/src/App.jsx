@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { AppProvider } from './context/AppContext';
 import { Toaster } from 'react-hot-toast';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import BottomNav from './components/BottomNav';
 import Dashboard from './screens/Dashboard';
 import Transactions from './screens/Transactions';
@@ -10,35 +10,66 @@ import Stats from './screens/Stats';
 import AddTransactionModal from './components/AddTransactionModal';
 import ConfirmationDialog from './components/ConfirmDialog';
 import SkeletonLoader from './components/Skeleton';
-import { useAppContext } from './context/AppContext';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import Sidebar from './components/Sidebar';
 import Login from './screens/Login';
 import Register from './screens/Register';
 
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+// Stores
+import { useAuthStore } from './store/useAuthStore';
+import { useBookStore } from './store/useBookStore';
+import { useCategoryStore } from './store/useCategoryStore';
+import { useTransactionStore } from './store/useTransactionStore';
 
 const AppContent = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [editTransaction, setEditTransaction] = useState(null);
   const [authView, setAuthView] = useState('login');
-  
-  const { deleteTransaction, loading: contextLoading } = useAppContext();
-  const { user, loading: authLoading } = useAuth();
-  
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    if (!authLoading) {
-      const timer = setTimeout(() => {
-        if (!contextLoading) setIsLoading(false);
-      }, 800);
-      return () => clearTimeout(timer);
-    }
-  }, [authLoading, contextLoading]);
+  // Zustand State
+  const { user, isAuthLoading, checkAuth } = useAuthStore();
+  const { activeBookId, fetchInitialData, isLoading: bookLoading } = useBookStore();
+  const { fetchCategories, isLoading: categoryLoading } = useCategoryStore();
+  const { fetchTransactions, deleteTransaction, isLoading: transactionLoading } = useTransactionStore();
 
-  if (authLoading || (user && isLoading)) return <SkeletonLoader />;
+  // Initial Auth Check
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  // Initial Data Fetch
+  useEffect(() => {
+    if (user) {
+      fetchInitialData();
+      fetchCategories();
+    }
+  }, [user, fetchInitialData, fetchCategories]);
+
+  // Fetch Transactions on active book change
+  useEffect(() => {
+    if (user && activeBookId) {
+      fetchTransactions(activeBookId);
+    }
+  }, [user, activeBookId, fetchTransactions]);
+
+  const handleAddClick = () => {
+    setEditTransaction(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditRequest = (transaction) => {
+    setEditTransaction(transaction);
+    setIsModalOpen(true);
+  };
+
+  // While checking auth, or initial data loading is happening, show Skeleton
+  const isGlobalLoading = isAuthLoading || (user && (bookLoading || categoryLoading || transactionLoading));
+
+  if (isGlobalLoading) return <SkeletonLoader />;
 
   if (!user) {
     return authView === 'login' 
@@ -49,45 +80,69 @@ const AppContent = () => {
   const isStatsPage = location.pathname === '/stats';
 
   return (
-    <div className="mobile-container">
-      {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto px-3 no-scrollbar mb-10">
-        {isStatsPage && (
-          <button
-            onClick={() => navigate('/')}
-            className="sticky top-2 z-[40] mb-2 px-3 py-1 bg-white shadow-md rounded-full text-[10px] font-semibold text-primary active:scale-95 transition-all"
-          >
-            ← Back to Home
-          </button>
-        )}
+    <>
+      {/* Desktop & Mobile Sidebar */}
+      <Sidebar 
+        isOpen={isMobileSidebarOpen}
+        onClose={() => setIsMobileSidebarOpen(false)}
+      />
 
-        <Routes>
-          <Route path="/" element={
-            <Dashboard
-              onStatsClick={() => navigate('/stats')}
-              onDeleteRequest={(id) => setDeleteId(id)}
-              onViewAll={() => navigate('/transactions')}
-            />
-          } />
-          <Route path="/transactions" element={<Transactions onDeleteRequest={(id) => setDeleteId(id)} />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/stats" element={<Stats />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+      <div className="mobile-container">
+        {/* Main Content Area */}
+        <div className="main-content-wrapper no-scrollbar overflow-y-auto relative">
+        <div className="dashboard-container">
+          {isStatsPage && (
+            <button
+              onClick={() => navigate('/')}
+              className="sticky top-2 z-[40] mb-2 px-3 py-1 bg-white shadow-md rounded-full text-[10px] font-semibold text-primary active:scale-95 transition-all lg:hidden"
+            >
+              ← Back to Home
+            </button>
+          )}
 
-        {/* Spacer for bottom nav */}
-        <div className="h-28" />
+          <Routes>
+            <Route path="/" element={
+              <Dashboard 
+                onMenuClick={() => setIsMobileSidebarOpen(true)}
+                onAddClick={handleAddClick} 
+                onEditRequest={handleEditRequest}
+                onStatsClick={() => navigate('/stats')}
+                onDeleteRequest={(id) => setDeleteId(id)}
+                onViewAll={() => navigate('/transactions')}
+              />
+            } />
+            <Route path="/transactions" element={
+              <Transactions 
+                onMenuClick={() => setIsMobileSidebarOpen(true)}
+                onEditRequest={handleEditRequest}
+                onDeleteRequest={(id) => setDeleteId(id)} 
+              />
+            } />
+            <Route path="/categories" element={<Categories onMenuClick={() => setIsMobileSidebarOpen(true)} />} />
+            <Route path="/settings" element={<Settings onMenuClick={() => setIsMobileSidebarOpen(true)} />} />
+            <Route path="/stats" element={<Stats onMenuClick={() => setIsMobileSidebarOpen(true)} />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+
+          {/* Spacer for bottom nav on mobile */}
+          <div className="h-28 lg:h-10" />
+        </div>
       </div>
 
-      {/* Static Bottom Navigation */}
-      <BottomNav
-        onAddClick={() => setIsModalOpen(true)}
-      />
+      {/* Static Bottom Navigation - Mobile Only */}
+      <div className="lg:hidden">
+        <BottomNav
+          onAddClick={() => setIsModalOpen(true)}
+        />
+      </div>
 
       <AddTransactionModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setEditTransaction(null);
+        }}
+        editData={editTransaction}
       />
 
       <ConfirmationDialog
@@ -100,18 +155,17 @@ const AppContent = () => {
         title="Delete Record"
         message="Are you sure you want to delete this transaction?"
       />
-    </div>
+      </div>
+    </>
   );
 };
 
 const App = () => {
   return (
-    <AuthProvider>
-      <AppProvider>
-        <Toaster position="top-center" />
-        <AppContent />
-      </AppProvider>
-    </AuthProvider>
+    <>
+      <Toaster position="top-center" />
+      <AppContent />
+    </>
   );
 };
 
