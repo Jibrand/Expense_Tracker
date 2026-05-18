@@ -17,7 +17,8 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
-  "https://expense-tracker-silk-three-94.vercel.app"
+  "https://expense-tracker-silk-three-94.vercel.app",
+  "https://ginnti.vercel.app"
 ];
 
 app.use(cors({
