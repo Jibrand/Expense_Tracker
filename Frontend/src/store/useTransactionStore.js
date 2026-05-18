@@ -37,6 +37,42 @@ export const useTransactionStore = create((set, get) => ({
     }
   },
 
+  addBulkTransactions: async (list, bookId) => {
+    const prevTransactions = get().transactions;
+    const tempTransactions = list.map(t => {
+      const tid = uuidv4();
+      return {
+        ...t,
+        _id: tid,
+        id: tid,
+        bookId: t.bookId || bookId,
+        createdAt: new Date().toISOString()
+      };
+    });
+
+    // Optimistic Update
+    const newTransactions = [...prevTransactions, ...tempTransactions];
+    set({ transactions: recalculateBalances(newTransactions) });
+    toast.success(`Importing ${list.length} records...`);
+
+    // Background Sync
+    useUIStore.getState().setSyncing(true);
+    try {
+      const saved = await transactionApi.createBulkTransactions(list.map(t => ({ ...t, bookId: t.bookId || bookId })));
+      set((state) => {
+        const nonTemp = state.transactions.filter(t => !tempTransactions.some(temp => temp._id === t._id || temp.id === t.id));
+        return { transactions: recalculateBalances([...nonTemp, ...saved]) };
+      });
+      toast.success('Import completed successfully!');
+    } catch (error) {
+      // Rollback
+      set({ transactions: prevTransactions });
+      toast.error('Failed to import records. Rolling back.');
+    } finally {
+      useUIStore.getState().setSyncing(false);
+    }
+  },
+
   addTransaction: async (data, bookId) => {
     const tempId = uuidv4();
     const tempTransaction = { 

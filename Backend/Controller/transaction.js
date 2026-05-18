@@ -32,6 +32,19 @@ export const deleteTransaction = async (req, res) => {
     res.status(404).json({ message: error.message });
   }
 };
+export const createBulkTransactions = async (req, res) => {
+  const { transactions } = req.body;
+  if (!Array.isArray(transactions)) return res.status(400).json({ message: "Transactions array is required" });
+  
+  const mapped = transactions.map(t => ({ ...t, userId: req.user.userId }));
+  try {
+    const inserted = await Transaction.insertMany(mapped);
+    res.status(201).json(inserted);
+  } catch (error) {
+    res.status(409).json({ message: error.message });
+  }
+};
+
 export const updateTransaction = async (req, res) => {
   const { id } = req.params;
   const transaction = req.body;

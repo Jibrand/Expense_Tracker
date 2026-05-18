@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { HiOutlineDownload, HiOutlineUser, HiOutlineLogout, HiOutlinePlus, HiOutlineCheckCircle, HiOutlineX, HiOutlineMenuAlt2 } from 'react-icons/hi';
+import { HiOutlineDownload, HiOutlineUser, HiOutlineLogout, HiOutlinePlus, HiOutlineCheckCircle, HiOutlineX, HiOutlineMenuAlt2, HiOutlineUpload, HiOutlineDocumentDownload } from 'react-icons/hi';
 
 // Stores
 import { useAuthStore } from '../store/useAuthStore';
 import { useBookStore } from '../store/useBookStore';
 import { useTransactionStore } from '../store/useTransactionStore';
+import { useCategoryStore } from '../store/useCategoryStore';
+import { bookApi } from '../api/bookApi';
+import { categoryApi } from '../api/categoryApi';
 
 const Settings = ({ onMenuClick }) => {
-  const { books, settings, setSettings, addBook, deleteBook } = useBookStore();
+  const { books, activeBookId, settings, setSettings, addBook, deleteBook } = useBookStore();
   const transactions = useTransactionStore(s => s.transactions);
+  const addBulkTransactions = useTransactionStore(s => s.addBulkTransactions);
   const { user, logout } = useAuthStore();
 
   // Local state for settings to enable manual save
@@ -64,6 +68,147 @@ const Settings = ({ onMenuClick }) => {
     link.click();
     document.body.removeChild(link);
     toast.success('Data exported successfully');
+  };
+
+  const downloadSampleCSV = () => {
+    const headers = ['Book', 'Date', 'Time', 'Remark', 'Category', 'Cash In', 'Cash Out'];
+    const rows = [
+      ['Personal', '2026-05-18', '03:40 PM', 'Office Supplies', 'Office', '0', '150'],
+      ['Office', '2026-05-18', '12:30 PM', 'Salary Bonus', 'Salary', '5000', '0'],
+      ['Personal', '2026-05-17', '09:00 AM', 'Coffee', 'Food', '0', '12']
+    ];
+
+    let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "sample_import.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Sample CSV downloaded');
+  };
+
+  const handleImportCSV = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target.result;
+      const lines = text.split(/\r?\n/);
+      if (lines.length <= 1) {
+        toast.error('CSV is empty or missing data rows');
+        return;
+      }
+
+      // Parse headers
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      
+      // Determine index mappings
+      const bookIdx = headers.indexOf('book');
+      const dateIdx = headers.indexOf('date');
+      const timeIdx = headers.indexOf('time');
+      const remarkIdx = headers.indexOf('remark');
+      const categoryIdx = headers.indexOf('category');
+      const cashInIdx = headers.indexOf('cash in');
+      const cashOutIdx = headers.indexOf('cash out');
+
+      if (dateIdx === -1 || remarkIdx === -1 || categoryIdx === -1 || cashInIdx === -1 || cashOutIdx === -1) {
+        toast.error('Invalid CSV format. Must contain Date, Remark, Category, Cash In, Cash Out headers');
+        return;
+      }
+
+      const parsedList = [];
+      let localBooks = [...useBookStore.getState().books];
+      let localCategories = [...useCategoryStore.getState().categories];
+      
+      const COLORS_POOL = ['#4F46E5', '#22C55E', '#EF4444', '#F59E0B', '#8B5CF6', '#10B981', '#3B82F6', '#EC4899', '#06B6D4'];
+      const ICONS_POOL = ['HiOutlineTag', 'HiOutlineHome', 'HiOutlineLightBulb', 'HiOutlineUserGroup', 'HiOutlineStar', 'HiOutlineFire'];
+
+      const loadingToastId = toast.loading('Processing CSV data...');
+
+      try {
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (!line) continue;
+
+          const cols = line.split(',').map(c => c.trim());
+          if (cols.length < headers.length) continue;
+
+          // 1. Determine/Create Book dynamically
+          let bookId = activeBookId;
+          if (bookIdx !== -1 && cols[bookIdx]) {
+            const csvBookName = cols[bookIdx];
+            let bookObj = localBooks.find(b => b.name.toLowerCase() === csvBookName.toLowerCase());
+            if (!bookObj) {
+              // Create the missing book dynamically
+              bookObj = await bookApi.createBook(csvBookName);
+              localBooks.push(bookObj);
+              // Update the store books list so the UI displays it instantly
+              useBookStore.setState({ books: localBooks });
+            }
+            bookId = bookObj._id;
+          }
+
+          // 2. Determine/Create Category dynamically
+          let category = 'Other';
+          let categoryIcon = 'HiOutlineTag';
+          if (categoryIdx !== -1 && cols[categoryIdx]) {
+            const csvCategoryName = cols[categoryIdx];
+            let catObj = localCategories.find(c => c.name.toLowerCase() === csvCategoryName.toLowerCase());
+            if (!catObj) {
+              const color = COLORS_POOL[Math.floor(Math.random() * COLORS_POOL.length)];
+              const icon = ICONS_POOL[Math.floor(Math.random() * ICONS_POOL.length)];
+              
+              // Create the missing category dynamically
+              catObj = await categoryApi.createCategory({ name: csvCategoryName, icon, color });
+              localCategories.push(catObj);
+              // Update the store categories list so the UI displays it instantly
+              useCategoryStore.setState({ categories: localCategories });
+            }
+            category = catObj.name;
+            categoryIcon = catObj.icon;
+          }
+
+          const date = cols[dateIdx] || new Date().toISOString().split('T')[0];
+          const timeRaw = timeIdx !== -1 ? cols[timeIdx] : '';
+          const time = timeRaw || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+          
+          const remark = cols[remarkIdx] || 'CSV Import';
+          const cashIn = parseFloat(cols[cashInIdx]) || 0;
+          const cashOut = parseFloat(cols[cashOutIdx]) || 0;
+          const amount = cashIn > 0 ? cashIn : cashOut;
+
+          parsedList.push({
+            bookId,
+            date,
+            time,
+            remark,
+            category,
+            categoryIcon,
+            amount,
+            cashIn,
+            cashOut
+          });
+        }
+
+        toast.dismiss(loadingToastId);
+
+        if (parsedList.length === 0) {
+          toast.error('No valid transactions found in CSV');
+          return;
+        }
+
+        await addBulkTransactions(parsedList, activeBookId);
+      } catch (err) {
+        toast.dismiss(loadingToastId);
+        toast.error('Failed to import CSV: ' + (err.message || err));
+      }
+    };
+
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const hasChanges = localEntryBy !== settings.entryBy;
@@ -172,8 +317,11 @@ const Settings = ({ onMenuClick }) => {
         </div>
 
         {/* Data Management Section */}
-        <div className="flat-card space-y-6 bg-white">
-          <h3 className="font-bold text-sm text-gray-800">Data management</h3>
+        <div className="flat-card space-y-4 bg-white">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-bold text-sm text-gray-800">Data management</h3>
+            <span className="text-[10px] font-bold text-gray-300">Backup & Import</span>
+          </div>
 
           <button
             onClick={exportToCSV}
@@ -186,6 +334,39 @@ const Settings = ({ onMenuClick }) => {
               <div className="text-left">
                 <p className="text-sm font-bold text-gray-700">Export to CSV</p>
                 <p className="text-[11px] font-medium text-gray-400">Download all records for external use</p>
+              </div>
+            </div>
+          </button>
+
+          <label className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-primary/5 transition-colors group border border-gray-100 hover:border-primary/20 cursor-pointer">
+            <div className="flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-white border border-gray-200 text-emerald-500 flex items-center justify-center transition-transform group-active:scale-90 shadow-sm">
+                <HiOutlineUpload size={22} />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-bold text-gray-700">Import from CSV</p>
+                <p className="text-[11px] font-medium text-gray-400">Bulk upload your spreadsheet data</p>
+              </div>
+            </div>
+            <input
+              type="file"
+              accept=".csv"
+              className="hidden"
+              onChange={handleImportCSV}
+            />
+          </label>
+
+          <button
+            onClick={downloadSampleCSV}
+            className="w-full flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-primary/5 transition-colors group border border-gray-100 hover:border-primary/20"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-white border border-gray-200 text-blue-500 flex items-center justify-center transition-transform group-active:scale-90 shadow-sm">
+                <HiOutlineDocumentDownload size={22} />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-bold text-gray-700">Download Sample CSV</p>
+                <p className="text-[11px] font-medium text-gray-400">Get a template for bulk upload formatting</p>
               </div>
             </div>
           </button>

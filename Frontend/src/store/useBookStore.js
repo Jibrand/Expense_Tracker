@@ -29,9 +29,14 @@ export const useBookStore = create((set, get) => ({
 
   addBook: async (name) => {
     const books = get().books;
+    if (books.some(b => b.name.toLowerCase() === name.trim().toLowerCase())) {
+      toast.error('Book with this name already exists');
+      return;
+    }
+
     // Optimistic Update
     const tempId = Date.now().toString();
-    const tempBook = { name, _id: tempId };
+    const tempBook = { name: name.trim(), _id: tempId };
     
     set({ books: [...books, tempBook] });
     if (!get().activeBookId) set({ activeBookId: tempId });
@@ -40,7 +45,7 @@ export const useBookStore = create((set, get) => ({
     // Background Sync
     useUIStore.getState().setSyncing(true);
     try {
-      const savedBook = await bookApi.createBook(name);
+      const savedBook = await bookApi.createBook(name.trim());
       set((state) => {
         const updatedBooks = state.books.map(b => b._id === tempId ? savedBook : b);
         let currentActive = state.activeBookId;
@@ -51,7 +56,8 @@ export const useBookStore = create((set, get) => ({
     } catch (error) {
       set({ books });
       if (get().activeBookId === tempId) set({ activeBookId: books[0]?._id || null });
-      toast.error('Failed to create book');
+      const errorMsg = error?.response?.data?.message || 'Failed to create book';
+      toast.error(errorMsg);
     } finally {
       useUIStore.getState().setSyncing(false);
     }

@@ -23,14 +23,14 @@ export const useCategoryStore = create((set, get) => ({
 
   addCategory: async (name) => {
     const categories = get().categories;
-    if (categories.some(c => c.name.toLowerCase() === name.toLowerCase())) {
-      toast.error('Exists');
+    if (categories.some(c => c.name.toLowerCase() === name.trim().toLowerCase())) {
+      toast.error('Category with this name already exists');
       return;
     }
 
     const color = COLORS_POOL[Math.floor(Math.random() * COLORS_POOL.length)];
     const icon = ICONS_POOL[Math.floor(Math.random() * ICONS_POOL.length)];
-    const newCategory = { name, icon, color };
+    const newCategory = { name: name.trim(), icon, color };
     
     // Optimistic Update
     const tempId = Date.now().toString();
@@ -49,7 +49,42 @@ export const useCategoryStore = create((set, get) => ({
     } catch (error) {
       // Rollback
       set({ categories });
-      toast.error('Failed to add category');
+      const errorMsg = error?.response?.data?.message || 'Failed to add category';
+      toast.error(errorMsg);
+    } finally {
+      useUIStore.getState().setSyncing(false);
+    }
+  },
+
+  updateCategory: async (id, data) => {
+    const categories = get().categories;
+    const original = categories.find(c => c._id === id);
+    
+    if (data.name && categories.some(c => c._id !== id && c.name.toLowerCase() === data.name.trim().toLowerCase())) {
+      toast.error('Category with this name already exists');
+      return;
+    }
+
+    // Optimistic Update
+    const updatedCategories = categories.map(c => c._id === id ? { ...c, ...data, name: data.name ? data.name.trim() : c.name } : c);
+    set({ categories: updatedCategories });
+    toast.success('Category updated');
+
+    // Background Sync
+    useUIStore.getState().setSyncing(true);
+    try {
+      const savedCategory = await categoryApi.updateCategory(id, {
+        ...data,
+        name: data.name ? data.name.trim() : undefined
+      });
+      set((state) => ({
+        categories: state.categories.map(c => c._id === id ? savedCategory : c)
+      }));
+    } catch (error) {
+      // Rollback
+      set({ categories });
+      const errorMsg = error?.response?.data?.message || 'Failed to update category';
+      toast.error(errorMsg);
     } finally {
       useUIStore.getState().setSyncing(false);
     }

@@ -1,5 +1,5 @@
 import express from "express";
-import { getTransactions, createTransaction, deleteTransaction, updateTransaction } from "../Controller/transaction.js";
+import { getTransactions, createTransaction, deleteTransaction, updateTransaction, createBulkTransactions } from "../Controller/transaction.js";
 import { getCategories, createCategory, updateCategory, deleteCategory } from "../Controller/category.js";
 import { getSettings, updateSettings } from "../Controller/settings.js";
 import { getBooks, createBook, deleteBook } from "../Controller/book.js";
@@ -20,6 +20,7 @@ router.delete("/books/:id", authMiddleware, deleteBook);
 // Transactions (Protected)
 router.get("/transactions", authMiddleware, getTransactions);
 router.post("/transactions", authMiddleware, createTransaction);
+router.post("/transactions/bulk", authMiddleware, createBulkTransactions);
 router.put("/transactions/:id", authMiddleware, updateTransaction);
 router.delete("/transactions/:id", authMiddleware, deleteTransaction);
 
