@@ -9,6 +9,7 @@ axios.defaults.withCredentials = true;
 
 export const apiClient = axios.create({
   baseURL: API_URL,
+  withCredentials: true,
 });
 
 export default apiClient;

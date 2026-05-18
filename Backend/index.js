@@ -12,11 +12,25 @@ const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
 app.use(cookieParser());
+
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "http://localhost:5175",
+  "https://expense-tracker-silk-three-94.vercel.app"
+];
+
 app.use(cors({
-  origin: [
-    "http://localhost:5173", 
-    "https://expense-tracker-silk-three-94.vercel.app"
-  ],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    const isLocalhost = origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:");
+    const isAllowedProduction = allowedOrigins.includes(origin);
+    if (isLocalhost || isAllowedProduction) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 

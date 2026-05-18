@@ -30,8 +30,9 @@ export const useAuthStore = create((set) => ({
 
   register: async (name, email, password, bookName) => {
     try {
-      await authApi.register(name, email, password, bookName);
-      toast.success('Registration successful! Please login.');
+      const data = await authApi.register(name, email, password, bookName);
+      set({ user: data.user });
+      toast.success('Registration successful! Welcome!');
       return true;
     } catch (error) {
       toast.error(error.response?.data?.message || 'Registration failed');

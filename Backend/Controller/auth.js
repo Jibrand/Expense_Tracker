@@ -49,7 +49,30 @@ export const register = async (req, res) => {
     }));
     await Category.insertMany(categoriesToSeed);
 
-    res.status(201).json({ message: "User registered successfully" });
+    // Automatically log in the user upon successful registration
+    const token = jwt.sign(
+      { email: newUser.email, userId: newUser._id, role: newUser.role },
+      process.env.JWT_SECRET || "test",
+      { expiresIn: "24h" }
+    );
+
+    const isProduction = process.env.NODE_ENV === "production";
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    });
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong" });
     console.log(error);
@@ -72,10 +95,11 @@ export const login = async (req, res) => {
       { expiresIn: "24h" }
     );
 
+    const isProduction = process.env.NODE_ENV === "production";
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // Must be true for sameSite: none
-      sameSite: "none",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     });
 
@@ -94,10 +118,11 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
+    const isProduction = process.env.NODE_ENV === "production";
     res.clearCookie("token", {
       httpOnly: true,
-      secure: true,
-      sameSite: "none"
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax"
     });
     res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
