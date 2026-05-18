@@ -12,6 +12,7 @@ export const useAuthStore = create((set) => ({
       const user = await authApi.checkAuth();
       set({ user, isAuthLoading: false });
     } catch (error) {
+      localStorage.removeItem('token');
       set({ user: null, isAuthLoading: false });
     }
   },
@@ -19,6 +20,9 @@ export const useAuthStore = create((set) => ({
   login: async (email, password) => {
     try {
       const data = await authApi.login(email, password);
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
       set({ user: data.user });
       toast.success('Welcome back!');
       return true;
@@ -31,6 +35,9 @@ export const useAuthStore = create((set) => ({
   register: async (name, email, password, bookName) => {
     try {
       const data = await authApi.register(name, email, password, bookName);
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
       set({ user: data.user });
       toast.success('Registration successful! Welcome!');
       return true;
@@ -43,10 +50,13 @@ export const useAuthStore = create((set) => ({
   logout: async () => {
     try {
       await authApi.logout();
+      localStorage.removeItem('token');
       set({ user: null });
       toast.success('Logged out');
     } catch (error) {
-      toast.error('Logout failed');
+      localStorage.removeItem('token');
+      set({ user: null });
+      toast.success('Logged out');
     }
   },
 }));
