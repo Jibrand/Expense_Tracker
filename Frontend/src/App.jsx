@@ -72,8 +72,8 @@ const AppContent = () => {
   if (isGlobalLoading) return <SkeletonLoader />;
 
   if (!user) {
-    return authView === 'login' 
-      ? <Login onToggle={() => setAuthView('register')} /> 
+    return authView === 'login'
+      ? <Login onToggle={() => setAuthView('register')} />
       : <Register onToggle={() => setAuthView('login')} />;
   }
 
@@ -82,7 +82,7 @@ const AppContent = () => {
   return (
     <>
       {/* Desktop & Mobile Sidebar */}
-      <Sidebar 
+      <Sidebar
         isOpen={isMobileSidebarOpen}
         onClose={() => setIsMobileSidebarOpen(false)}
       />
@@ -90,71 +90,71 @@ const AppContent = () => {
       <div className="mobile-container">
         {/* Main Content Area */}
         <div className="main-content-wrapper no-scrollbar overflow-y-auto relative">
-        <div className="dashboard-container">
-          {isStatsPage && (
-            <button
-              onClick={() => navigate('/')}
-              className="sticky top-2 z-[40] mb-2 px-3 py-1 bg-white shadow-md rounded-full text-[10px] font-semibold text-primary active:scale-95 transition-all lg:hidden"
-            >
-              ← Back to Home
-            </button>
-          )}
+          <div className="dashboard-container">
+            {isStatsPage && (
+              <button
+                onClick={() => navigate('/')}
+                className="sticky top-2 z-[40] mb-2 px-3 py-1 bg-white shadow-md rounded-full text-[10px] font-semibold text-primary active:scale-95 transition-all lg:hidden"
+              >
+                ← Back to Home
+              </button>
+            )}
 
-          <Routes>
-            <Route path="/" element={
-              <Dashboard 
-                onMenuClick={() => setIsMobileSidebarOpen(true)}
-                onAddClick={handleAddClick} 
-                onEditRequest={handleEditRequest}
-                onStatsClick={() => navigate('/stats')}
-                onDeleteRequest={(id) => setDeleteId(id)}
-                onViewAll={() => navigate('/transactions')}
-              />
-            } />
-            <Route path="/transactions" element={
-              <Transactions 
-                onMenuClick={() => setIsMobileSidebarOpen(true)}
-                onEditRequest={handleEditRequest}
-                onDeleteRequest={(id) => setDeleteId(id)} 
-              />
-            } />
-            <Route path="/categories" element={<Categories onMenuClick={() => setIsMobileSidebarOpen(true)} />} />
-            <Route path="/settings" element={<Settings onMenuClick={() => setIsMobileSidebarOpen(true)} />} />
-            <Route path="/stats" element={<Stats onMenuClick={() => setIsMobileSidebarOpen(true)} />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+            <Routes>
+              <Route path="/" element={
+                <Dashboard
+                  onMenuClick={() => setIsMobileSidebarOpen(true)}
+                  onAddClick={handleAddClick}
+                  onEditRequest={handleEditRequest}
+                  onStatsClick={() => navigate('/stats')}
+                  onDeleteRequest={(id) => setDeleteId(id)}
+                  onViewAll={() => navigate('/transactions')}
+                />
+              } />
+              <Route path="/transactions" element={
+                <Transactions
+                  onMenuClick={() => setIsMobileSidebarOpen(true)}
+                  onEditRequest={handleEditRequest}
+                  onDeleteRequest={(id) => setDeleteId(id)}
+                />
+              } />
+              <Route path="/categories" element={<Categories onMenuClick={() => setIsMobileSidebarOpen(true)} />} />
+              <Route path="/settings" element={<Settings onMenuClick={() => setIsMobileSidebarOpen(true)} />} />
+              <Route path="/stats" element={<Stats onMenuClick={() => setIsMobileSidebarOpen(true)} />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
 
-          {/* Spacer for bottom nav on mobile */}
-          <div className="h-28 lg:h-10" />
+            {/* Spacer for bottom nav on mobile */}
+            <div className="h-28 lg:h-10" />
+          </div>
         </div>
-      </div>
 
-      {/* Static Bottom Navigation - Mobile Only */}
-      <div className="lg:hidden">
-        <BottomNav
-          onAddClick={() => setIsModalOpen(true)}
+        {/* Static Bottom Navigation - Mobile Only */}
+        <div className="lg:hidden">
+          <BottomNav
+            onAddClick={() => setIsModalOpen(true)}
+          />
+        </div>
+
+        <AddTransactionModal
+          isOpen={isModalOpen}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditTransaction(null);
+          }}
+          editData={editTransaction}
         />
-      </div>
 
-      <AddTransactionModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setEditTransaction(null);
-        }}
-        editData={editTransaction}
-      />
-
-      <ConfirmationDialog
-        isOpen={!!deleteId}
-        onClose={() => setDeleteId(null)}
-        onConfirm={() => {
-          deleteTransaction(deleteId);
-          setDeleteId(null);
-        }}
-        title="Delete Record"
-        message="Are you sure you want to delete this transaction?"
-      />
+        <ConfirmationDialog
+          isOpen={!!deleteId}
+          onClose={() => setDeleteId(null)}
+          onConfirm={() => {
+            deleteTransaction(deleteId);
+            setDeleteId(null);
+          }}
+          title="Delete Record"
+          message="Are you sure you want to delete this transaction?"
+        />
       </div>
     </>
   );
