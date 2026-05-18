@@ -16,7 +16,7 @@ export const createBook = async (req, res) => {
     if (!name || !name.trim()) {
       return res.status(400).json({ message: "Book name is required" });
     }
-    
+
     // Unique check (case-insensitive)
     const existing = await Book.findOne({
       userId: req.user.userId,
