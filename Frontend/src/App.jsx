@@ -66,10 +66,8 @@ const AppContent = () => {
     setIsModalOpen(true);
   };
 
-  // While checking auth, or initial data loading is happening, show Skeleton
-  const isGlobalLoading = isAuthLoading || (user && (bookLoading || categoryLoading || transactionLoading));
-
-  if (isGlobalLoading) return <SkeletonLoader />;
+  // Only show full-screen splash loader during the initial bootup authentication check
+  if (isAuthLoading) return <SkeletonLoader />;
 
   if (!user) {
     return authView === 'login'
