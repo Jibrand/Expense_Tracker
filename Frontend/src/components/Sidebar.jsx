@@ -1,12 +1,13 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { HiOutlineHome, HiOutlineMenuAlt2, HiOutlineTag, HiOutlineCog, HiOutlineChartPie, HiPlus, HiOutlineBookOpen, HiChevronDown, HiOutlinePlusSm } from 'react-icons/hi';
+import { HiOutlineHome, HiOutlineMenuAlt2, HiOutlineTag, HiOutlineCog, HiOutlineChartPie, HiPlus, HiOutlineBookOpen, HiChevronDown, HiOutlinePlusSm, HiOutlineLogout } from 'react-icons/hi';
 import { useAuthStore } from '../store/useAuthStore';
 import { useBookStore } from '../store/useBookStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Sidebar = ({ isOpen, onClose }) => {
   const user = useAuthStore(s => s.user);
+  const logout = useAuthStore(s => s.logout);
   const { books, activeBookId, setActiveBookId, addBook } = useBookStore();
   const [isBooksOpen, setIsBooksOpen] = React.useState(false);
   const [isAddingBook, setIsAddingBook] = React.useState(false);
@@ -177,14 +178,26 @@ const Sidebar = ({ isOpen, onClose }) => {
 
         {/* User Profile */}
         <div className="p-4 border-t border-gray-100">
-          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
-            <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-sm">
-              {user?.name?.[0]?.toUpperCase()}
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center font-bold text-sm shrink-0">
+                {user?.name?.[0]?.toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <p className="text-sm font-bold text-gray-800 truncate">{user?.name}</p>
+                <p className="text-[10px] text-gray-400 font-bold">Standard Member</p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-sm font-bold text-gray-800 truncate">{user?.name}</p>
-              <p className="text-[10px] text-gray-400 font-bold">Standard Member</p>
-            </div>
+            <button
+              onClick={() => {
+                logout();
+                if (onClose) onClose();
+              }}
+              title="Logout"
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-rose-500 hover:bg-rose-50 active:scale-90 transition-all shrink-0 border border-transparent hover:border-rose-100"
+            >
+              <HiOutlineLogout size={18} />
+            </button>
           </div>
         </div>
       </div>
