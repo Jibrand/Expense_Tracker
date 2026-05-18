@@ -47,7 +47,7 @@ const Skeleton = () => {
               initial: { duration: 0.5, ease: "easeOut" },
               scale: { repeat: Infinity, duration: 2, ease: "easeInOut" }
             }}
-            className="relative w-20 h-20 bg-white rounded-3xl flex items-center justify-center shadow-md border border-slate-100 p-2 overflow-hidden"
+            className="relative w-20 h-20 md:w-28 md:h-28 bg-white rounded-3xl flex items-center justify-center shadow-md border border-slate-100 p-2 md:p-3 overflow-hidden"
           >
             <img
               src="/logo.png"
@@ -62,18 +62,18 @@ const Skeleton = () => {
           initial={{ y: 10, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="space-y-1"
+          className="space-y-1.5"
         >
-          <h1 className="text-3xl font-black text-slate-800 tracking-wide">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-slate-800 ">
             Ginnti
           </h1>
-          <p className="text-[9px]   text-primary font-bold">
+          <p className="text-[12px] md:text-sm  text-primary font-extrabold ">
             Aapka Apna Digital Hisaab
           </p>
         </motion.div>
 
         {/* Elegant Light Progress Bar */}
-        <div className="w-32 h-[3px] bg-slate-200 rounded-full overflow-hidden mt-6 mb-5">
+        <div className="w-36 md:w-48 h-[3px] bg-slate-200 rounded-full overflow-hidden mt-6 mb-5">
           <motion.div
             animate={{
               x: ["-100%", "100%"]
@@ -88,14 +88,14 @@ const Skeleton = () => {
         </div>
 
         {/* Dynamic Comedy Roman Urdu Message */}
-        <div className="h-10 flex items-center justify-center">
+        <div className="h-12 flex items-center justify-center">
           <motion.p
             key={quoteIndex}
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 0.8, y: 0 }}
             exit={{ opacity: 0, y: -5 }}
             transition={{ duration: 0.3 }}
-            className="text-xs font-bold text-slate-600 italic max-w-[260px] leading-relaxed"
+            className="text-sm md:text-base lg:text-lg font-bold text-slate-600 italic max-w-[280px] md:max-w-[400px] leading-relaxed"
           >
             {ROMAN_URDU_QUOTES[quoteIndex]}
           </motion.p>
