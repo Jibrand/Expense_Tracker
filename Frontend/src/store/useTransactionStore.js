@@ -4,12 +4,98 @@ import { transactionApi } from '../api/transactionApi';
 import { useUIStore } from './useUIStore';
 import toast from 'react-hot-toast';
 
+const normalizeDateToYYYYMMDD = (dateStr) => {
+  if (!dateStr || typeof dateStr !== 'string') {
+    return new Date().toISOString().split('T')[0];
+  }
+  
+  // Try to match YYYY-MM-DD or YYYY/MM/DD
+  let match = dateStr.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})$/);
+  if (match) {
+    const [_, y, m, d] = match;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+
+  // Try to match DD/MM/YYYY or DD-MM-YYYY
+  match = dateStr.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})$/);
+  if (match) {
+    const [_, d, m, y] = match;
+    const dayVal = parseInt(d);
+    const monthVal = parseInt(m);
+    
+    let day, month;
+    if (dayVal > 12) {
+      // Must be DD/MM/YYYY
+      day = d.padStart(2, '0');
+      month = m.padStart(2, '0');
+    } else if (monthVal > 12) {
+      // Must be MM/DD/YYYY
+      day = m.padStart(2, '0');
+      month = d.padStart(2, '0');
+    } else {
+      // Default to DD/MM/YYYY
+      day = d.padStart(2, '0');
+      month = m.padStart(2, '0');
+    }
+    return `${y}-${month}-${day}`;
+  }
+
+  // Fallback to standard Date formatting if possible
+  try {
+    const parsed = new Date(dateStr);
+    if (!isNaN(parsed.getTime())) {
+      return parsed.toISOString().split('T')[0];
+    }
+  } catch (e) {}
+
+  return dateStr;
+};
+
+const parseDateStringToMs = (dateStr) => {
+  if (!dateStr || typeof dateStr !== 'string') return 0;
+  const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (match) {
+    const [_, y, m, d] = match;
+    return new Date(parseInt(y), parseInt(m) - 1, parseInt(d)).getTime();
+  }
+  const parsed = new Date(dateStr).getTime();
+  return isNaN(parsed) ? 0 : parsed;
+};
+
+const parseTimeToMinutes = (timeStr) => {
+  if (!timeStr || typeof timeStr !== 'string') return 0;
+  const match = timeStr.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+  if (!match) return 0;
+  let [_, hours, minutes, ampm] = match;
+  hours = parseInt(hours);
+  minutes = parseInt(minutes);
+  if (ampm) {
+    if (ampm.toUpperCase() === 'PM' && hours < 12) hours += 12;
+    if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+  }
+  return hours * 60 + minutes;
+};
+
 const recalculateBalances = (list) => {
-  const sorted = [...list].sort((a, b) => {
-    const dA = new Date(a.date);
-    const dB = new Date(b.date);
-    if (dA - dB !== 0) return dA - dB;
-    return new Date(a.createdAt || Date.now()).getTime() - new Date(b.createdAt || Date.now()).getTime();
+  // 1. Normalize all dates in the list so sorting and calculations are perfectly uniform
+  const normalizedList = list.map(t => ({
+    ...t,
+    date: normalizeDateToYYYYMMDD(t.date)
+  }));
+
+  // 2. Sort chronologically (oldest first) so running balance compiles correctly
+  const sorted = [...normalizedList].sort((a, b) => {
+    const timeA = parseDateStringToMs(a.date);
+    const timeB = parseDateStringToMs(b.date);
+    if (timeA !== timeB) return timeA - timeB;
+    
+    const minA = parseTimeToMinutes(a.time);
+    const minB = parseTimeToMinutes(b.time);
+    if (minA !== minB) return minA - minB;
+
+    const timeCreateA = new Date(a.createdAt || 0).getTime();
+    const timeCreateB = new Date(b.createdAt || 0).getTime();
+    return timeCreateA - timeCreateB;
   });
 
   let currentBalance = 0;
