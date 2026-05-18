@@ -38,25 +38,43 @@ app.use(cors({
 // Health Check
 app.get("/", (req, res) => res.status(200).send("Expense Tracker API is running"));
 
+// Database connection manager for serverless environments (Vercel)
+const connectDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    return;
+  }
+  if (!process.env.CONNECTION_URL) {
+    throw new Error("CONNECTION_URL environment variable is missing!");
+  }
+  await mongoose.connect(process.env.CONNECTION_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+};
+
+// Global DB Connection Middleware for all requests
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    console.error("Database connection error in middleware:", err);
+    res.status(500).json({ message: "Database connection failed", error: err.message });
+  }
+});
+
 // API Routes
 app.use("/api", apiRoutes);
 
-const CONNECTION_URL = process.env.CONNECTION_URL;
+// Trigger initial connection
+connectDB()
+  .then(() => console.log('Connected Successfully to MongoDB.'))
+  .catch((err) => console.log('Initial connection failed: ', err.message));
 
-mongoose.connect(CONNECTION_URL, { 
-    useNewUrlParser: true, 
-    useUnifiedTopology: true 
-})
-.then(() => {
-    console.log('Connected Successfully to MongoDB.');
-    // Only listen locally, Vercel handles the serverless execution
-    if (process.env.NODE_ENV !== 'production') {
-        app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`));
-    }
-})
-.catch((err) => {
-    console.log('Connection failed: ', err.message);
-});
+// Only listen locally, Vercel handles the serverless execution
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(PORT, () => console.log(`Server is running on port: ${PORT}`));
+}
 
 // Prevent crashes from unhandled rejections
 process.on('unhandledRejection', (reason, promise) => {

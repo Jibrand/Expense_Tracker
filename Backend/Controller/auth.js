@@ -75,8 +75,8 @@ export const register = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
-    console.log(error);
+    console.error("Register error details:", error);
+    res.status(500).json({ message: error.message || "Something went wrong during registration" });
   }
 };
 
@@ -114,7 +114,8 @@ export const login = async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(500).json({ message: "Something went wrong" });
+    console.error("Login error details:", error);
+    res.status(500).json({ message: error.message || "Something went wrong during login" });
   }
 };
 
